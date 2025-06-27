@@ -63,7 +63,7 @@ const startPooling = () => {
         if (!isNaN(skuNum)) {
           console.log({ line, sku: skuNum, counter: counterVal });
           // Tracking aktifkan jika siap
-          // manager.updateLine({ line, sku: skuNum, counter: counterVal });
+          manager.updateLine({ line, sku: skuNum, counter: counterVal });
         }
       }
     } catch (error) {
