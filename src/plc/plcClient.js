@@ -7,7 +7,7 @@ manager.restoreFromFile();
 
 // Inisialisasi PLC
 const PLC = new Controller();
-const PLC_IP = '192.168.1.10';
+const PLC_IP = '10.203.179.200';
 
 const lineTags = {
   Line01: { sku: 'Filler_SPLine01.CTX_SKUID', counter: 'Total_Counter_L1' },
