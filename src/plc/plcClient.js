@@ -69,34 +69,13 @@ const startPooling = () => {
       }
     } catch (error) {
 		console.error('❌ PLC polling error:', error.message);
-		stopPooling();
-		reconnectToPLC();
     }
   }, 1000);
 };
 
-const stopPooling = () => {
-	if (poolingInterval) {
-		clearInterval(poolingInterval);
-		poolingInterval = null;
-		console.log('⏹️ Polling stopped.');
-	}
-};
-
-let reconnecting = false;
-
-function reconnectToPLC() {
-	if (reconnecting) return;
-	reconnecting = true;
-	console.log('🔄 Reconnecting to PLC in 5s...');
-	setTimeout(() => {
-		connectToPLC();
-	}, 5000);
-}
 
 function connectToPLC() {
   console.log(`🔌 Connecting to PLC ${PLC_IP}...`);
-  reconnecting = false;
   PLC.connect(PLC_IP, 0)
     .then(() => {
       console.log('✅ PLC connected.');
@@ -104,7 +83,6 @@ function connectToPLC() {
     })
     .catch(err => {
       console.error('❌ PLC connection error:', err.message);
-      reconnectToPLC();
     });
 }
 
