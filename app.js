@@ -5,7 +5,7 @@ const cors = require('cors')
 const path = require('path')
 require('./src/db/migrate.js')
 const { getDataAutoCoding } = require('./src/services/autoCoding.js')
-const { pollingPcl } = require('./src/plc/plcClient.js')
+const { connectToPLC } = require('./src/plc/plcClient.js')
 
 const app = express()
 const PORT = 8739
@@ -70,7 +70,7 @@ const startServer = async () => {
         await getDataAutoCoding()
         server.listen(PORT, () => {
             console.log('Server started on htt://localhost:'+PORT)
-            pollingPcl()
+            connectToPLC()
         })
     } catch (error) {
         
