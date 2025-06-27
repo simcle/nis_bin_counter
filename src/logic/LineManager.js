@@ -13,7 +13,7 @@ class LineManager extends EventEmitter {
     super();
     this.lines = new Map(); // line => { tracker, started_at }
     this.pendingChanges = new Map();
-    this.firstInit = true; // 👈 tambahkan flag
+    this.firstInit = true; // first start service
   }
 
   updateLine({ line, sku, counter }) {
