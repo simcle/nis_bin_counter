@@ -10,7 +10,6 @@ const PLC = new Controller();
 const PLC_IP = '10.203.179.200';
 
 const lineTags = {
-  Line01: { sku: 'Filler_SPLine01.CTX_SKUID', counter: 'Total_Counter_L1' },
   Line02: { sku: 'Filler_SPLine02.CTX_SKUID', counter: 'Total_Counter_L2' },
   Line03: { sku: 'Filler_SPLine03.CTX_SKUID', counter: 'Total_Counter_L3' },
   Line04: { sku: 'Filler_SPLine04.CTX_SKUID', counter: 'Total_Counter_L4' }
