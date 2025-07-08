@@ -64,6 +64,7 @@ const startPooling = () => {
 			if (!isNaN(skuNum)) {
 			console.log({ line, sku: skuNum, counter: counterVal });
 			// Tracking aktifkan jika siap
+				eventBus.emit('plc', {message: 'Connected'})
 				handlePlcLineLog(line, skuNum, counterVal)
 				manager.updateLine({ line, sku: skuNum, counter: counterVal });
 			}
