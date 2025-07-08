@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const dayjs = require('dayjs');
 
-// Map line => { sku, counter }
+// Map line => { sku, pro, counter }
 const lastStatePerLine = new Map();
 
 function logToFile(line, eventData) {
@@ -20,28 +20,55 @@ function logToFile(line, eventData) {
   fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n');
 }
 
-function handlePlcLineLog(line, sku, counter) {
+/**
+ * Handle log perubahan PLC line
+ * @param {string} line
+ * @param {number} sku
+ * @param {string} pro
+ * @param {number} counter
+ */
+
+function handlePlcLineLog(line, sku, pro, counter) {
   const last = lastStatePerLine.get(line);
 
   if (!last) {
     // Pertama kali muncul
-    logToFile(line, { event: 'init', sku, counter });
-    lastStatePerLine.set(line, { sku, counter });
+    logToFile(line, { event: 'init', sku, pro, counter });
+    lastStatePerLine.set(line, { sku, pro, counter });
     return;
   }
 
   // SKU berubah
   if (sku !== last.sku) {
-    logToFile(line, { event: 'sku-change', oldSku: last.sku, newSku: sku });
+    logToFile(line, {
+      event: 'sku-change',
+      oldSku: last.sku,
+      newSku: sku
+    });
+  }
+
+  // PRO berubah
+  if (pro !== last.pro) {
+    logToFile(line, {
+      event: 'pro-change',
+      oldPro: last.pro,
+      newPro: pro
+    });
   }
 
   // Counter reset
   if (counter < last.counter) {
-    logToFile(line, { event: 'counter-reset', sku, prevCounter: last.counter, currentCounter: counter });
+    logToFile(line, {
+      event: 'counter-reset',
+      sku,
+      pro,
+      prevCounter: last.counter,
+      currentCounter: counter
+    });
   }
 
   // Update last state
-  lastStatePerLine.set(line, { sku, counter });
+  lastStatePerLine.set(line, { sku, pro, counter });
 }
 
 module.exports = {
