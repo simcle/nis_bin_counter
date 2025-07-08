@@ -5,7 +5,9 @@ const cors = require('cors')
 const path = require('path')
 require('./src/db/migrate.js')
 const { getDataAutoCoding } = require('./src/services/autoCoding.js')
-const { connectToPLC } = require('./src/plc/plcClient.js')
+const { connectToPLC } = require('./src/plc/plcClient.js') 
+const { connectToPrintServer } = require('./src/services/sendToPrintServer.js')
+const eventBus = require('./src/even/event.js')
 
 const app = express()
 const PORT = 8739
@@ -20,6 +22,15 @@ const io = new Server(server, {
     cors: {
         origin: '*'
     }
+})
+
+eventBus.on('plc', (data) => {
+    console.log(data)
+    io.emit('plc', data)
+})
+eventBus.on('print', (data) => {
+    console.log(data)
+    io.emit('print', data)
 })
 
 const { manager } = require('./src/plc/plcClient.js')
@@ -71,6 +82,7 @@ const startServer = async () => {
         server.listen(PORT, () => {
             console.log('Server started on htt://localhost:'+PORT)
             connectToPLC()
+            connectToPrintServer()
         })
     } catch (error) {
         
