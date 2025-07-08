@@ -1,7 +1,7 @@
 const { Controller, Tag, TagGroup } = require('ethernet-ip');
 const eventBus = require('../even/event.js')
 const LineManager = require('../logic/LineManager.js');
-
+const { handlePlcLineLog } = require('../utils/plcLogger.js');
 // Inisialisasi LineManager
 const manager = new LineManager();
 manager.restoreFromFile();
@@ -56,7 +56,7 @@ const startPooling = () => {
 			const len = tagLen.value;
 			let str = '';
 			for (let i = 0; i < len; i++) {
-			str += String.fromCharCode(tagData[i].value || 0);
+				str += String.fromCharCode(tagData[i].value || 0);
 			}
 			const skuNum = parseInt(str);
 			const counterVal = Number(counterTags[line]?.value) || 0;
@@ -64,7 +64,8 @@ const startPooling = () => {
 			if (!isNaN(skuNum)) {
 			console.log({ line, sku: skuNum, counter: counterVal });
 			// Tracking aktifkan jika siap
-			manager.updateLine({ line, sku: skuNum, counter: counterVal });
+				handlePlcLineLog(line, skuNum, counterVal)
+				manager.updateLine({ line, sku: skuNum, counter: counterVal });
 			}
 		}
 		} catch (error) {
