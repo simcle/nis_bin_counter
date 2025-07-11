@@ -11,39 +11,46 @@ const SAVE_PATH = path.resolve('./line_state.json');
 class LineManager extends EventEmitter {
   constructor() {
     super();
-    this.lines = new Map(); // line => { tracker, started_at }
+    this.lines = new Map(); // line => { tracker, pro, started_at }
     this.pendingChanges = new Map();
-    this.firstInit = true; // first start service
+    this.firstInit = true;
   }
 
-  updateLine({ line, sku, counter }) {
+  updateLine({ line, sku, pro, counter }) {
     const skuInfo = findSkuId(sku);
-    if (!skuInfo) return;
+    if (!skuInfo) {
+      this.emit('invalid-sku', { 
+        line, 
+        sku, 
+        pro, 
+        counter, 
+        message: 'SKU tidak ditemukan di master data' 
+      });
+      return;
+    }
 
     const currentLine = this.lines.get(line);
     const currentTracker = currentLine?.tracker;
+    const currentPro = currentLine?.pro;
 
     // INIT line baru
     if (!currentTracker && !this.pendingChanges.has(line)) {
-      // FirstInit: langsung tracking walaupun counter ≠ 1
       if (counter === 1 || this.firstInit) {
         const tracker = new BinTracker(sku, skuInfo.max_per_bin, skuInfo);
         const started_at = dayjs().format('YYYY-MM-DD HH:mm:ss');
         tracker.addCounter(counter);
         this.lines.set(line, {
           tracker,
+          pro,
           started_at
         });
-
         this.emit('new-line-start', { line, tracker, started_at });
-
-        // Jika sudah ada minimal 1 line aktif, matikan firstInit
         if (this.lines.size >= 1) {
           this.firstInit = false;
         }
       } else {
-        this.pendingChanges.set(line, { sku });
-        this.emit('waiting-for-counter-reset', { line, sku });
+        this.pendingChanges.set(line, { sku, pro });
+        this.emit('waiting-for-counter-reset', { line, sku, pro });
       }
       return;
     }
@@ -51,79 +58,110 @@ class LineManager extends EventEmitter {
     // Menunggu counter reset
     if (this.pendingChanges.has(line)) {
       const pending = this.pendingChanges.get(line);
-      if (sku === pending.sku && counter === 1) {
+      if (sku === pending.sku && pro === pending.pro && counter === 1) {
         const tracker = new BinTracker(sku, skuInfo.max_per_bin, skuInfo);
         const started_at = dayjs().format('YYYY-MM-DD HH:mm:ss');
         tracker.addCounter(counter);
         this.lines.set(line, {
           tracker,
+          pro,
           started_at
         });
         this.pendingChanges.delete(line);
         this.emit('new-line-start', { line, tracker, started_at });
       } else {
-        this.emit('waiting-for-counter-reset', { line, sku, counter });
+        this.emit('waiting-for-counter-reset', { line, sku, pro, counter });
       }
       return;
     }
 
-    // SKU sama → lanjut tracking
-    if (currentTracker.currentSku === sku) {
-      const prevBinCount = currentTracker.bins.length;
-      currentTracker.addCounter(counter);
-      const newBinCount = currentTracker.bins.length;
-
-      this.emit('line-update', {
+    // PRO berubah
+    if (pro !== currentPro) {
+      const started_at = currentLine?.started_at || dayjs().format('YYYY-MM-DD HH:mm:ss');
+      saveToDatabase(
         line,
-        sku,
-        bin: currentTracker.currentBin,
-        contain: currentTracker.currentContain,
-        counter,
-        bins: currentTracker.bins
-      });
+        currentTracker.currentSku,
+        currentLine?.pro || null,
+        currentTracker.currentBin,
+        currentTracker.lastCounter,
+        currentTracker.skuData,
+        started_at,
+        currentTracker.bins
+      );
+      this.emit('pro-change', { line, oldPro: currentPro, newPro: pro });
+      this.lines.delete(line);
 
-      if (newBinCount > prevBinCount) {
-        const addedBins = currentTracker.bins.slice(prevBinCount);
-        for (const newBin of addedBins) {
-          this.emit('bin-added', { line, sku, bin: newBin });
-        }
-      }
-      return;
-    }
-
-    // SKU berubah → simpan & proses
-    const started_at = currentLine?.started_at || dayjs().format('YYYY-MM-DD HH:mm:ss');
-    saveToDatabase(
-      line,
-      currentTracker.currentSku,
-      currentTracker.currentBin,
-      currentTracker.lastCounter,
-      currentTracker.skuData,
-      started_at,
-      currentTracker.bins
-    );
-
-    this.emit('sku-change', { line, oldSku: currentTracker.currentSku, newSku: sku });
-    this.lines.delete(line);
-
-    if (counter === 1) {
       const tracker = new BinTracker(sku, skuInfo.max_per_bin, skuInfo);
-      const started_at = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      const newStartedAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
       tracker.addCounter(counter);
       this.lines.set(line, {
         tracker,
-        started_at
+        pro,
+        started_at: newStartedAt
       });
-      this.emit('new-line-start', { line, tracker, started_at });
-    } else {
-      this.pendingChanges.set(line, { sku });
-      this.emit('waiting-for-counter-reset', { line, sku });
+      this.emit('new-line-start', { line, tracker, started_at: newStartedAt });
+      return;
+    }
+
+    // SKU berubah
+    if (sku !== currentTracker.currentSku) {
+      const started_at = currentLine?.started_at || dayjs().format('YYYY-MM-DD HH:mm:ss');
+      saveToDatabase(
+        line,
+        currentTracker.currentSku,
+        currentLine?.pro || null,
+        currentTracker.currentBin,
+        currentTracker.lastCounter,
+        currentTracker.skuData,
+        started_at,
+        currentTracker.bins
+      );
+      this.emit('sku-change', { line, oldSku: currentTracker.currentSku, newSku: sku });
+      this.lines.delete(line);
+
+      if (counter === 1) {
+        const tracker = new BinTracker(sku, skuInfo.max_per_bin, skuInfo);
+        const newStartedAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+        tracker.addCounter(counter);
+        this.lines.set(line, {
+          tracker,
+          pro,
+          started_at: newStartedAt
+        });
+        this.emit('new-line-start', { line, tracker, started_at: newStartedAt });
+      } else {
+        this.pendingChanges.set(line, { sku, pro });
+        this.emit('waiting-for-counter-reset', { line, sku, pro });
+      }
+      return;
+    }
+
+    // SKU dan PRO sama → lanjut tracking
+    const prevBinCount = currentTracker.bins.length;
+    currentTracker.addCounter(counter);
+    const newBinCount = currentTracker.bins.length;
+
+    this.emit('line-update', {
+      line,
+      sku,
+      pro,
+      bin: currentTracker.currentBin,
+      contain: currentTracker.currentContain,
+      counter,
+      bins: currentTracker.bins
+    });
+
+    if (newBinCount > prevBinCount) {
+      const addedBins = currentTracker.bins.slice(prevBinCount);
+      for (const newBin of addedBins) {
+        this.emit('bin-added', { line, sku, pro, bin: newBin });
+      }
     }
   }
 
   getLineBins() {
     const result = [];
-    for (const [line, { tracker, started_at }] of this.lines.entries()) {
+    for (const [line, { tracker, pro, started_at }] of this.lines.entries()) {
       result.push({
         line,
         status: false,
@@ -140,6 +178,7 @@ class LineManager extends EventEmitter {
           counter: tracker?.lastCounter || null
         },
         bins: tracker.bins,
+        pro,
         started_at
       });
     }
@@ -153,6 +192,7 @@ class LineManager extends EventEmitter {
         saveToDatabase(
           line,
           tracker.currentSku,
+          data?.pro || null,
           tracker.currentBin,
           tracker.lastCounter,
           tracker.skuData,
@@ -166,41 +206,37 @@ class LineManager extends EventEmitter {
 
   flushAllToFile() {
     const state = {};
-
     for (const [line, data] of this.lines) {
-      const { tracker, started_at } = data;
+      const { tracker, started_at, pro } = data;
       state[line] = {
         sku: tracker.currentSku,
         maxPerBin: tracker.maxPerBin,
         lastCounter: tracker.lastCounter,
         bins: tracker.bins,
         started_at,
+        pro,
         skuData: tracker.skuData
       };
     }
-
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state, null, 2));
     console.log(`📁 State saved to ${SAVE_PATH}`);
   }
 
   restoreFromFile() {
     if (!fs.existsSync(SAVE_PATH)) return;
-
     try {
       const data = fs.readFileSync(SAVE_PATH, 'utf-8');
       const state = JSON.parse(data);
-
       for (const [line, value] of Object.entries(state)) {
         const tracker = new BinTracker(value.sku, value.maxPerBin, value.skuData || {});
         tracker.lastCounter = value.lastCounter;
         tracker.bins = value.bins;
-
         this.lines.set(line, {
           tracker,
+          pro: value.pro || null,
           started_at: value.started_at || dayjs().format('YYYY-MM-DD HH:mm:ss')
         });
       }
-
       console.log('✅ State restored from file.');
     } catch (err) {
       console.error('❌ Failed to restore state:', err.message);

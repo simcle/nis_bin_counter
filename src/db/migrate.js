@@ -17,6 +17,7 @@ db.exec(`
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             line TEXT,
             sku_id TEXT,
+            pro_id TEXT,
             print_text TEXT,
             mat_desc TEXT,
             max_per_bin INTEGER,

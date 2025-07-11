@@ -35,6 +35,10 @@ eventBus.on('print', (data) => {
 
 const { manager } = require('./src/plc/plcClient.js')
 
+manager.on('invalid-sku', data => {
+    io.emit('invalid-sku', data)
+})
+
 manager.on('new-line-start', data => {
     io.emit('new-line-start', data)
 });
@@ -46,6 +50,10 @@ manager.on('bin-added', data => {
     io.emit('bin-added', data)
     // console.log(`Add new Bin ${data.line} → ${data.sku} → ${data.bin.bin}`);
 });
+
+manager.on('pro-change', data => {
+    io.emit('pro-change', data)
+})
 
 manager.on('sku-change', data => {
     io.emit('sku-change', data)
