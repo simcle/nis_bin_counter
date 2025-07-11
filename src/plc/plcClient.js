@@ -99,7 +99,7 @@ const startPooling = () => {
 				handlePlcLineLog(line, skuNum, proStr, counterVal)   
 				
 				// Tracking
-				// manager.updateLine({ line, sku: skuNum, pro: proStr, counter: counterVal });
+				manager.updateLine({ line, sku: skuNum, pro: proStr, counter: counterVal });
 			}
 		}
 		} catch (error) {
