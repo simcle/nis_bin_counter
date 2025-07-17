@@ -2,7 +2,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, '../../data/DikonekAutoCodingNutricia.db');
+const dbPath = '\\\\Didniscrc46039k\\d\\DikonekAutoCodingNutricia.db';
 const skuCache = new Map();
 
 let db = null;
