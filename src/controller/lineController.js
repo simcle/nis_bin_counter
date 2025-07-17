@@ -65,6 +65,7 @@ async function downloadLine (req, res) {
     worksheet.columns = [
         {key: 'line', width: 10},
         {key: 'sku_id', width: 10},
+        {key: 'pro_id', width: 10},
         {key: 'print_text', width: 20},
         {key: 'mat_desc', width: 35},
         {key: 'max_per_bin', width: 12},
@@ -74,11 +75,11 @@ async function downloadLine (req, res) {
     ]
     worksheet.getRow(1).values = ['line', 'sku', 'start date', 'end date']
     worksheet.getRow(2).values = [line, search, startDate, endDate]
-    worksheet.getRow(4).values = ['LINE', 'SKU', 'PRINT TEXT', 'MATERIAL DESC', 'MAX PER BIN', 'TOTAL BIN', 'TOTAL COUNTER', 'STARTED AT']
+    worksheet.getRow(4).values = ['LINE', 'PRO', 'SKU', 'PRINT TEXT', 'MATERIAL DESC', 'MAX PER BIN', 'TOTAL BIN', 'TOTAL COUNTER', 'STARTED AT']
     worksheet.addRows(rows)
     res.setHeader(
             "Content-Disposition",
-            "attachment; filename=" + "products.xlsx"
+            "attachment; filename=" + "linesession.xlsx"
         );
     await workbook.xlsx.write(res);
     res.status(200).end();
