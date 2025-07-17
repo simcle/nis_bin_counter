@@ -186,7 +186,7 @@ class LineManager extends EventEmitter {
   }
   // format untuk kirim ke print server
   getLastBinIdsString(lineOrder = []) {
-    const lastBins = lastBins
+    const lastBins = []
     for (const [line, { tracker, pro, started_at }] of this.lines.entries()) {
     const lastBin = tracker.bins[tracker.bins.length - 1] || null;
     lastBins.push({
