@@ -13,8 +13,8 @@ function connectToPrintServer () {
     eventBus.emit('print', {message: 'Connecting to print...'})
     client.connect(PRINT_PORT, PRINT_HOST, async () => {
         if(printInterval) clearInterval(printInterval)
-            eventBus.emit('print', {message: 'Connected'})
             printInterval = setInterval( async() => {
+            eventBus.emit('print', {message: 'Connected'})
             const orderedLines = ['Line01', 'Line02', 'Line03', 'Line04'];
             dataToPrint = manager.getLastBinIdsString(orderedLines)
             console.log(dataToPrint)
