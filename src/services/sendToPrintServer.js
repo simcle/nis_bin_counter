@@ -1,9 +1,7 @@
 const net = require('net')
-const { manager } = require('../plc/plcClient.js')
-
 const eventBus = require('../even/event.js')
-
 const { manager } = require('../plc/plcClient.js')
+
 const PRINT_HOST = '10.203.179.133'
 const PRINT_PORT = '2345'
 
