@@ -29,7 +29,7 @@ eventBus.on('plc', (data) => {
     io.emit('plc', data)
 })
 eventBus.on('print', (data) => {
-    console.log(data)
+    console.log('print', data)
     io.emit('print', data)
 })
 
