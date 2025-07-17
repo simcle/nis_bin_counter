@@ -14,12 +14,12 @@ function connectToPrintServer () {
     console.log(dataToPrint)
     const client = new net.Socket()
     eventBus.emit('print', {message: 'Connecting to print...'})
-    client.connect(PRINT_HOST, PRINT_PORT, async () => {
+    client.connect(PRINT_PORT, PRINT_HOST, async () => {
         eventBus.emit('print', {message: 'Connected'})
         if(printInterval) clearInterval(printInterval)
         printInterval = setInterval( async() => {
             if(dataToPrint) {
-                // client.write(dataToPrint)
+                client.write(dataToPrint)
             }
         }, 5000)
     })
