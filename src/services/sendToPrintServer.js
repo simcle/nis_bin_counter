@@ -1,4 +1,6 @@
 const net = require('net')
+const { manager } = require('../plc/plcClient.js')
+
 const eventBus = require('../even/event.js')
 
 const { manager } = require('../plc/plcClient.js')
@@ -7,7 +9,10 @@ const PRINT_PORT = '2345'
 
 let printInterval = null
 let dataToPrint = null
+
 function connectToPrintServer () {
+    const bins = manager.getLastBinsPerLine()
+    console.log(bins)
     const client = new net.Socket()
     eventBus.emit('print', {message: 'Connecting to print...'})
     client.connect(PRINT_HOST, PRINT_PORT, async () => {
@@ -15,7 +20,7 @@ function connectToPrintServer () {
         if(printInterval) clearInterval(printInterval)
         printInterval = setInterval( async() => {
             if(dataToPrint) {
-                client.write(dataToPrint)
+                // client.write(dataToPrint)
             }
         }, 5000)
     })

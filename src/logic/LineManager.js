@@ -184,7 +184,20 @@ class LineManager extends EventEmitter {
     }
     return result;
   }
-
+  getLastBinsPerLine() {
+    const result = [];
+    for (const [line, { tracker, pro, started_at }] of this.lines.entries()) {
+      const lastBin = tracker.bins[tracker.bins.length - 1] || null;
+      result.push({
+        line,
+        lastBin,
+        sku: tracker.currentSku,
+        pro,
+        started_at
+      });
+    }
+    return result;
+  }
   flushAllToDatabase() {
     for (const [line, data] of this.lines) {
       const { tracker, started_at } = data;
@@ -242,6 +255,10 @@ class LineManager extends EventEmitter {
       console.error('❌ Failed to restore state:', err.message);
     }
   }
+
+
 }
+
+
 
 module.exports = LineManager;

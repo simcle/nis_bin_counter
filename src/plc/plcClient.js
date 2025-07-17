@@ -84,12 +84,12 @@ const startPooling = () => {
 			const counterVal = Number(counterTags[line]?.value) || 0;
 
 			if (!isNaN(skuNum)) {
-				console.log({
-					line,
-					sku: skuNum,
-					pro: proStr,
-					counter: counterVal
-				});
+				// console.log({
+				// 	line,
+				// 	sku: skuNum,
+				// 	pro: proStr,
+				// 	counter: counterVal
+				// });
 
 				// Emit event contoh
 				eventBus.emit('plc', { message: 'Connected' });
