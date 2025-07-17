@@ -9,15 +9,15 @@ let printInterval = null
 let dataToPrint = null
 
 function connectToPrintServer () {
-    const orderedLines = ['Line01', 'Line02', 'Line03', 'Line04'];
-    dataToPrint = manager.getLastBinIdsString(orderedLines)
-    console.log(dataToPrint)
     const client = new net.Socket()
     eventBus.emit('print', {message: 'Connecting to print...'})
     client.connect(PRINT_PORT, PRINT_HOST, async () => {
-        eventBus.emit('print', {message: 'Connected'})
         if(printInterval) clearInterval(printInterval)
-        printInterval = setInterval( async() => {
+            eventBus.emit('print', {message: 'Connected'})
+            printInterval = setInterval( async() => {
+            const orderedLines = ['Line01', 'Line02', 'Line03', 'Line04'];
+            dataToPrint = manager.getLastBinIdsString(orderedLines)
+            console.log(dataToPrint)
             if(dataToPrint) {
                 client.write(dataToPrint)
             }
