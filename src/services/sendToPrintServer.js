@@ -9,8 +9,9 @@ let printInterval = null
 let dataToPrint = null
 
 function connectToPrintServer () {
-    const bins = manager.getLastBinsPerLine()
-    console.log(bins)
+    const orderedLines = ['Line01', 'Line02', 'Line03', 'Line04'];
+    dataToPrint = manager.getLastBinIdsString(orderedLines)
+    console.log(dataToPrint)
     const client = new net.Socket()
     eventBus.emit('print', {message: 'Connecting to print...'})
     client.connect(PRINT_HOST, PRINT_PORT, async () => {

@@ -184,19 +184,23 @@ class LineManager extends EventEmitter {
     }
     return result;
   }
-  getLastBinsPerLine() {
-    const result = [];
-    for (const [line, { tracker, pro, started_at }] of this.lines.entries()) {
-      const lastBin = tracker.bins[tracker.bins.length - 1] || null;
-      result.push({
-        line,
-        lastBin,
-        sku: tracker.currentSku,
-        pro,
-        started_at
-      });
+  // format untuk kirim ke print server
+  getLastBinIdsString(lineOrder = []) {
+    const lastBins = this.getLastBinsPerLine();
+
+    // Buat map supaya mudah akses berdasarkan line
+    const binMap = new Map();
+    for (const { line, lastBin } of lastBins) {
+      binMap.set(line, lastBin?.bin || 0); // default ke 0 jika undefined
     }
-    return result;
+
+    // Susun string berdasarkan urutan line
+    const values = lineOrder.map((line) => {
+      const bin = binMap.get(line);
+      return (line && bin) ? bin : 0;
+    });
+
+    return values.join(';');
   }
   flushAllToDatabase() {
     for (const [line, data] of this.lines) {
