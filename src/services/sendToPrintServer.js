@@ -19,7 +19,7 @@ function connectToPrintServer () {
             dataToPrint = manager.getLastBinIdsString(orderedLines)
             console.log(dataToPrint)
             if(dataToPrint) {
-                client.write(dataToPrint)
+                // client.write(dataToPrint)
             }
         }, 5000)
     })
