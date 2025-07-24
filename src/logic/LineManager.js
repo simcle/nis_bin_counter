@@ -45,7 +45,7 @@ class LineManager extends EventEmitter {
           started_at
         });
         this.emit('new-line-start', { line, tracker, started_at });
-        if (this.lines.size >= 1) {
+        if (this.lines.size >= 3) {
           this.firstInit = false;
         }
       } else {
