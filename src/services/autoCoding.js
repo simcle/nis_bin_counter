@@ -101,7 +101,7 @@ async function getDataAutoCoding() {
 // Sync berkala tiap 5 menit
 setInterval(() => {
     getDataAutoCoding();
-}, 1000); // 1 Jam
+}, 1000); // 1 detik
 
 // Jalankan awal
 tryConnectDatabase();
