@@ -53,7 +53,7 @@ async function getDataAutoCoding() {
                 sku_id: row.Code,
                 print_text: row.PrintText,
                 mat_desc: row.MatDescription,
-                max_per_bin: row.SachetPerHead
+                max_per_bin: row.SachetPerLine
             });
         }
 
