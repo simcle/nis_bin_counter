@@ -53,7 +53,7 @@ async function getDataAutoCoding() {
                 sku_id: row.Code,
                 print_text: row.PrintText,
                 mat_desc: row.MatDescription,
-                max_per_bin: row.SachetPerLine
+                max_per_bin: row.SachetPerHead
             });
         }
 
@@ -101,7 +101,7 @@ async function getDataAutoCoding() {
 // Sync berkala tiap 5 menit
 setInterval(() => {
     getDataAutoCoding();
-}, 1000); // 1 detik
+}, 60000); // 1 detik
 
 // Jalankan awal
 tryConnectDatabase();
